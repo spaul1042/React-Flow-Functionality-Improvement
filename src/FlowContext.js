@@ -1,5 +1,10 @@
 import React, { createContext, useState, useContext } from "react";
-import { shouldPreventConnection, findConnectedComponents, isLeafNode, assignParallelEnds} from './enhanceGUI/functions'
+import {
+  shouldPreventConnection,
+  findConnectedComponents,
+  isLeafNode,
+  assignParallelEnds,
+} from "./enhanceGUI/functions";
 
 const FlowContext = createContext();
 const initialNodes = [
@@ -46,6 +51,8 @@ export const FlowProvider = ({ children }) => {
     { nodes: initialNodes, edges: initialEdges },
   ]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
+  const [horizontalSpacing, setHorizontalSpacing] = useState(200);
+  const [verticalSpacing, setVerticalSpacing] = useState(200);
 
   const addNode = (node) => {
     setNodes((prevNodes) => [...prevNodes, node]);
@@ -67,7 +74,6 @@ export const FlowProvider = ({ children }) => {
 
       return assignParallelEnds(prevNodes, updatedEdges);
     });
-    
   };
 
   return (
@@ -83,6 +89,10 @@ export const FlowProvider = ({ children }) => {
         setHistory,
         currentHistoryIndex,
         setCurrentHistoryIndex,
+        horizontalSpacing,
+        verticalSpacing,
+        setHorizontalSpacing,
+        setVerticalSpacing,
       }}
     >
       {children}

@@ -1,13 +1,14 @@
-import React, { useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import ReactFlow from "react-flow-renderer";
 import { MiniMap, Controls } from "react-flow-renderer";
-
 import { useFlow } from "./FlowContext";
 import ImageNode from "./customNodes/ImageNode";
 import CircularNode from "./customNodes/CircularNode";
 import CustomNodeComponent from "./customNodes/CustomNodeComponent";
 import IconNode from "./customNodes/IconNode";
 import myImage from "./logo_1.png";
+
+import SpacingAdjuster from "./enhanceGUI/SpacingAdjuster";
 
 const FlowDiagram = () => {
   const {
@@ -19,6 +20,8 @@ const FlowDiagram = () => {
     currentHistoryIndex,
     setHistory,
     setCurrentHistoryIndex,
+    horizontalSpacing,
+    verticalSpacing,
   } = useFlow();
   const reactFlowWrapper = useRef(null);
   const nodeIdRef = useRef(nodes.length + 1);
@@ -115,7 +118,7 @@ const FlowDiagram = () => {
     return cyclePresent;
   }
 
-   // returns an array of [size of connected Component, id of root node for the connected component] for all the connected components of the graph
+  // returns an array of [size of connected Component, id of root node for the connected component] for all the connected components of the graph
   function findConnectedComponents(nodes, edges) {
     // Build Graph
     const graph = new Map();
@@ -160,7 +163,7 @@ const FlowDiagram = () => {
             (currNode) => currNode.id === componentNodeId
           );
           const componentNodeY = componentNode.position.y;
-    
+
           if (minY === "null") {
             minY = componentNodeY;
             rootNodeId = componentNodeId;
@@ -234,7 +237,6 @@ const FlowDiagram = () => {
           }
           return node;
         });
-
       }
     }
     return updatedNodes;
@@ -261,7 +263,6 @@ const FlowDiagram = () => {
     },
     [nodes, edges, setEdges, setNodes, pushToHistory]
   );
-
 
   const onNodeDragStop = useCallback(
     (event, node) => {
@@ -362,8 +363,8 @@ const FlowDiagram = () => {
 
   const makeNodesEquispacedAndCentered = useCallback(() => {
     if (!reactFlowWrapper.current) return;
-    const verticalSpacing = 200; // Vertical spacing between levels
-    const horizontalSpacing = 200; // Horizontal spacing between levels
+
+    console.log(horizontalSpacing, verticalSpacing);
     const containerWidth = reactFlowWrapper.current.offsetWidth;
     const centerX = containerWidth / 2;
 
@@ -440,10 +441,13 @@ const FlowDiagram = () => {
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={{ justifyContent: "space-evenly", padding: "10px" }}>
+      <div style={{ margin: "10px", display: "flex", alignItems: "center" }}>
         <button onClick={makeNodesEquispacedAndCentered}>
           Equispace Nodes
         </button>
+        <SpacingAdjuster />
+      </div>
+      <div style={{ justifyContent: "space-evenly", padding: "10px" }}>
         <button onClick={undo}>Undo</button>
         <button onClick={redo}>Redo</button>
         <button onClick={() => addNode("circular")}>Add Circular Node</button>
@@ -469,4 +473,3 @@ const FlowDiagram = () => {
 };
 
 export default FlowDiagram;
-

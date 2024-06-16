@@ -2,12 +2,16 @@ import React from 'react';
 import { FlowProvider } from './FlowContext';
 import FlowDiagram from './FlowDiagram';
 import NodeControl from './NodeControl';
+import './App.css';
 
 function App() {
   return (
     <FlowProvider>
       <NodeControl />
-      <FlowDiagram />
+      <div className="container">
+        <FlowDiagram />
+      </div>
+      
     </FlowProvider>
   );
 }
