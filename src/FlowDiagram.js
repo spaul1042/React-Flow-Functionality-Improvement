@@ -411,7 +411,7 @@ const FlowDiagram = () => {
     pushToHistory(updatedNodes, edges);
     setNodes(updatedNodes);
     console.log(updatedNodes);
-  }, [nodes, edges, pushToHistory]);
+  }, [nodes, edges, pushToHistory, horizontalSpacing, verticalSpacing]);
 
   const undo = useCallback(() => {
     if (currentHistoryIndex === 0) return;
