@@ -1,10 +1,18 @@
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
 
-In the project directory, you can run:
+In the project directory, you first run 
+
+### `npm install`
+
+Installs all the related dependencies
+
+Then You can run :
 
 ### `npm start`
 
@@ -13,6 +21,19 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
+
+### Features added 
+
+1) Connections between parallel branches is not allowed, if you try to do so , you will recieve an alert message!
+2) The leaf nodes are labelled with parallel end tags with their unique branch ids: You may see changing the label of leaf nodes if you try to connect two nodes, delete a node or drag a node
+3) If you click on "Equispace Nodes" button, all the parallel nodes at the same level will get equispaced and centered.
+4) Sliders are provided so that you can change the horizontal and vertical spacing between nodes, before equispacing them.
+5) Enhanced the UI appearance of the application
+
+
+### things to keep in mind while testing the application
+1) You can try creating multiple connected components, where each component must be a tree, any invalid connection will give you an alert.
+2) The root node of any flowchart(tree) should be at the top. You can drag any node to the top if you want it to be the root node. 
 
 ### `npm test`
 
