@@ -74,12 +74,16 @@ const FlowDiagram = () => {
     [nodes, edges, pushToHistory]
   );
 
-  // returns true if connection between two nodes is possible
+  // returns true if we noeed to prevent connection between two nodes
   // or simply returns true if there are no cycles in the graph
-  function shouldPreventConnection(updatedNodes, updatedEdges) {
-    // Build graph
+  function shouldPreventConnection(nodes, edges, sourceNode, targetNode) {
+    // if the target not is circular
+    if (targetNode.type === "circular") {
+      return false;
+    }
+
     const graph = new Map();
-    updatedEdges.forEach((edge) => {
+    edges.forEach((edge) => {
       if (!graph.has(edge.source)) {
         graph.set(edge.source, []);
       }
@@ -91,31 +95,23 @@ const FlowDiagram = () => {
       graph.get(edge.target).push(edge.source);
     });
 
-    function hasCycleDFS(graph, visited, node, parentNode) {
+    function DFS(graph, visited, node, parentNode) {
       visited.add(node);
-      let hasCycle = false;
       for (let neighbor of graph.get(node) || []) {
         if (neighbor === parentNode) continue;
-        if (visited.has(neighbor)) return true;
-        if (hasCycleDFS(graph, visited, neighbor, node)) return true;
+        if (visited.has(neighbor)) continue;
+        DFS(graph, visited, neighbor, node);
       }
-
-      return false;
     }
 
+    // if the target node is not circular
     const visited = new Set();
     let parentNode = "null";
 
-    let cyclePresent = false;
-    for (let node of updatedNodes) {
-      if (
-        !visited.has(node.id) &&
-        hasCycleDFS(graph, visited, node.id, parentNode)
-      ) {
-        cyclePresent = cyclePresent || true;
-      }
-    }
-    return cyclePresent;
+    DFS(graph, visited, sourceNode.id, parentNode);
+    if (visited.has(targetNode.id)) return true; // return true if both source and target nodes are in the same connected component
+
+    return false;
   }
 
   // returns an array of [size of connected Component, id of root node for the connected component] for all the connected components of the graph
@@ -184,31 +180,31 @@ const FlowDiagram = () => {
   // function to find whether a node is a leaf node or not
   function isLeafNode(updatedNodes, updatedEdges, currNodeId) {
     let NumberOfEdgesFromCurrNode = 0;
+    let totalNumberOfEdges = 0;
     for (let i = 0; i < updatedEdges.length; i++) {
-      if (
-        updatedEdges[i].source === currNodeId ||
-        updatedEdges[i].target === currNodeId
-      ) {
+      if (updatedEdges[i].source === currNodeId) {
         NumberOfEdgesFromCurrNode++;
       }
+      if (
+        updatedEdges[i].source === currNodeId ||
+        updatedEdges[i].target == currNodeId
+      ) {
+        totalNumberOfEdges++;
+      }
     }
-    return NumberOfEdgesFromCurrNode === 1;
+    if (totalNumberOfEdges == 0) return false;
+
+    return NumberOfEdgesFromCurrNode === 0;
   }
 
   // function to assign paraller end tags to leaf nodes with unique branch ids, returns updated nodes
   function assignParallelEnds(updatedNodes, updatedEdges) {
-    const rootNodes = findConnectedComponents(updatedNodes, updatedEdges);
-
-    // assigning end of branch label to leaf nodes with unique branch ids
     let branchId = 1;
     for (let i = 0; i < updatedNodes.length; i++) {
       const currNode = updatedNodes[i];
 
-      if (
-        !(rootNodes.filter((arr) => arr[1] === currNode.id).length > 0) &&
-        isLeafNode(updatedNodes, updatedEdges, currNode.id)
-      ) {
-        // currNode is not a root node but is a leaf node
+      if (isLeafNode(updatedNodes, updatedEdges, currNode.id)) {
+        // currNode is a leaf node
         // update the label to "Parallel end" if it is a leaf node
         updatedNodes = updatedNodes.map((node) => {
           if (node.id === currNode.id) {
@@ -219,10 +215,9 @@ const FlowDiagram = () => {
           }
           return node;
         });
-        // setNodes(updatedNodes);
         branchId++;
       } else {
-        // if its either a root or a non-leaf node, change the label to original one
+        // if it is a non-leaf node, change the label to original one
         updatedNodes = updatedNodes.map((node) => {
           if (node.id === currNode.id) {
             return {
@@ -253,7 +248,7 @@ const FlowDiagram = () => {
       let updatedEdges = [...edges, { id: `e${source}-${target}`, ...params }]; // Clone the current edges array
 
       // Proceed with adding the edge if the connection is valid
-      if (!shouldPreventConnection(updatedNodes, updatedEdges)) {
+      if (!shouldPreventConnection(nodes, edges, sourceNode, targetNode)) {
         pushToHistory(nodes, edges);
         setEdges((eds) => [...eds, { id: `e${source}-${target}`, ...params }]);
         updatedNodes = assignParallelEnds(updatedNodes, updatedEdges);
@@ -473,3 +468,30 @@ const FlowDiagram = () => {
 };
 
 export default FlowDiagram;
+
+// function shouldPreventConnection(sourceNode, targetNode) {
+//   // Rule 1: Prevent direct connections between circular nodes
+//   if (sourceNode.type === 'circular' && targetNode.type === 'circular') {
+//     alert("Can't connect two circular nodes.....")
+//     return true;
+//   }
+//   const sourceBranch = sourceNode.data.branch; // Assuming 'branch' is a property indicating the node's branch
+//   const targetBranch = targetNode.data.branch;
+
+//   // Check if both branches are defined before comparing them
+//   if (sourceBranch && targetBranch && sourceBranch !== targetBranch) {
+//     alert(`Cannot connect nodes from different branches: ${sourceBranch} to ${targetBranch}`);
+//     return true; // Prevents connecting nodes from different branches
+//   }
+
+// // Rule 2: Optionally, prevent connecting back to a node that's already in the path
+// // This requires checking the edges to see if making this connection creates a loop
+//   const createsLoop = edges.some(edge => edge.source === targetNode.id && edge.target === sourceNode.id);
+//   if (createsLoop) {
+//     return true;
+//   }
+
+//   // Example: Prevent connecting if both nodes are of a specific type that shouldn't be connected
+//   // Adjust the logic as necessary
+//   return false; // Placeholder logic
+// }
